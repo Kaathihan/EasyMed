@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:reminder/view/location_viewer.dart';
 import 'package:reminder/view/reminder_list.dart';
 
 import 'login.dart';
 
 class HomePage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) => Scaffold(
-      body: ReminderList(),
-  );
+        body: LocationViewer(),
+      );
 }
 
 // body: StreamBuilder(
