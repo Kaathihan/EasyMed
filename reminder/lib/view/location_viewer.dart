@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:reminder/model/app_constants.dart';
@@ -24,15 +26,23 @@ class _LocationViewerState extends State<LocationViewer> {
   late MapController mapController;
   var _positionMessage = '';
   var _descriptionMessage = '';
-  LatLng origin = LatLng(43.76797479617749, -79.30457865788011);
+  LatLng origin = LatLng(0.0, 0.0);
   List<LatLng> pharmas = [];
-  double currentZoom = 13;
+  double currentZoom = 15;
 
   void initState() {
     super.initState();
     mapController = MapController();
-    _determinePosition();
-    _getPharma();
+
+    Geolocator.isLocationServiceEnabled().then((value) => null);
+    Geolocator.requestPermission().then((value) => null);
+    Geolocator.checkPermission().then((LocationPermission permission) {
+      print("Check Location Permission: $permission");
+    });
+
+    Geolocator.getPositionStream(
+      locationSettings: LocationSettings(accuracy: LocationAccuracy.best),
+    ).listen(_updateLocationStream);
   }
 
   @override
@@ -56,7 +66,7 @@ class _LocationViewerState extends State<LocationViewer> {
           FlutterMap(
             mapController: mapController,
             options: MapOptions(
-                minZoom: 5, maxZoom: 18, zoom: currentZoom, center: origin),
+                minZoom: 12, maxZoom: 18, zoom: currentZoom, center: origin),
             layers: [
               TileLayerOptions(
                 urlTemplate: AppConstants.mapBoxStyleID,
@@ -79,6 +89,28 @@ class _LocationViewerState extends State<LocationViewer> {
                             ),
                           );
                         }),
+                  Marker(
+                      height: 80,
+                      width: 80,
+                      point: origin,
+                      builder: (context) {
+                        return Container(
+                            child: IconButton(
+                                onPressed: () {
+                                  final snack = SnackBar(
+                                      content: Text(_descriptionMessage.length
+                                          .toString()),
+                                      action: SnackBarAction(
+                                        label: 'Close',
+                                        onPressed: () {},
+                                      ));
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snack);
+                                  setState(() {});
+                                },
+                                icon: Icon(Icons.circle, color: Colors.blue),
+                                iconSize: 20));
+                      })
                 ],
               ),
             ],
@@ -90,6 +122,10 @@ class _LocationViewerState extends State<LocationViewer> {
     _positionMessage = userLocation.latitude.toString() +
         ',' +
         userLocation.longitude.toString();
+    origin = LatLng(userLocation.latitude, userLocation.longitude);
+    mapController.move(
+        LatLng(userLocation.latitude, userLocation.longitude), currentZoom);
+    _getPharma();
     final List<Placemark> places = await placemarkFromCoordinates(
         userLocation.latitude, userLocation.longitude);
     setState(() {
@@ -103,9 +139,11 @@ class _LocationViewerState extends State<LocationViewer> {
             origin.latitude.toString() +
             ',' +
             origin.longitude.toString() +
-            '&radius=10000&type=pharmacy&key=' +
+            '&radius=' +
+            pow((currentZoom * 10), 2).toString() +
+            '&type=pharmacy&key=' +
             AppConstants.googleToken);
-
+    print(url);
     var response = await http.post(url);
 
     PlacesResponse placeResponse =
@@ -121,55 +159,18 @@ class _LocationViewerState extends State<LocationViewer> {
   }
 
   void _zoomOut() {
-    currentZoom -= 1;
-    mapController.move(origin, currentZoom);
+    if (currentZoom > 12) {
+      currentZoom -= 1;
+      mapController.move(origin, currentZoom);
+      _getPharma();
+    }
   }
 
   void _zoomIn() {
-    currentZoom += 1;
-    mapController.move(origin, currentZoom);
-  }
-
-  _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
+    if (currentZoom < 18) {
+      currentZoom += 1;
+      mapController.move(origin, currentZoom);
+      _getPharma();
     }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    setState(() {
-      Geolocator.getCurrentPosition().then(
-        (value) {
-          origin = LatLng(value.latitude, value.longitude);
-        },
-      );
-    });
   }
 }
