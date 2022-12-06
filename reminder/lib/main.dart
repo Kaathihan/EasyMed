@@ -6,8 +6,10 @@ import 'package:reminder/view/home_page.dart';
 import 'package:reminder/view/login.dart';
 import 'package:reminder/view/reminder_list.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_i18n/flutter_i18n_delegate.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-Future main() async{
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
