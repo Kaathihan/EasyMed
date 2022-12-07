@@ -4,8 +4,6 @@ import 'package:reminder/model/reminder.dart';
 import 'package:reminder/view/profile.dart';
 import 'package:reminder/view/reminder_list.dart';
 
-import '../controller/add_reminder.dart';
-
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
 
@@ -15,7 +13,6 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   int selectedIndex = 0;
-  Reminder? reminder;
 
   @override
   Widget build(BuildContext context) {
@@ -60,16 +57,11 @@ class _SearchState extends State<Search> {
                       title: Text(medicine[index].name.toString()),
                       subtitle: Text(medicine[index].instructions!),
                       selected: index == selectedIndex,
-                      selectedTileColor: Colors.redAccent,
+                      selectedTileColor: Colors.blue,
                       selectedColor: Colors.white,
                       onTap: () {
                         setState(() {
                           selectedIndex = index;
-                          reminder = Reminder(
-                              id: medicine[index].id,
-                              name: medicine[index].name.toString(),
-                              instructions:
-                                  medicine[index].instructions.toString());
                         });
                       },
                     )));
@@ -78,21 +70,6 @@ class _SearchState extends State<Search> {
               return Center(child: CircularProgressIndicator());
             }
           }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => ReminderForm(reminder: reminder!,))
-            ).then((value) => {
-              setState(() {
-                //readReminders();
-              })
-            });
-          });
-        },
-        tooltip: 'Add',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 

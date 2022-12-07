@@ -6,40 +6,26 @@ class Reminder {
   int? id;
   String? name;
   String? instructions;
-  String? usage;
-  String? date;
-  String? time;
 
-  Reminder(
-      {this.id,
-      this.name,
-      this.instructions,
-      this.usage,
-      this.date,
-      this.time});
+  Reminder({this.id, this.name, this.instructions});
 
   factory Reminder.fromMap(Map map) {
     return Reminder(
-        id: map['id'],
-        name: map['name'],
-        instructions: map['instructions'],
-        usage: map['usage'],
-        date: map['date'],
-        time: map['time']);
+      id: map['id'],
+      name: map['name'],
+      instructions: map['instructions'],
+    );
   }
 
-  Map<String, Object?> toMap() {
+  Map<String,Object?> toMap() {
     return {
-      'id': id,
-      'name': name,
-      'instructions': instructions,
-      'usage': usage,
-      'date': date,
-      'time': time
+      'id':id,
+      'name':name,
+      'instructions':instructions
     };
   }
 
   String toString() {
-    return "Reminder[id: $id], name: $name, instruction: $instructions, usage: $usage, date: $date, time: $time";
+    return "Reminder[id: $id], name: $name, instruction: $instructions";
   }
 }

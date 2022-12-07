@@ -1,7 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:reminder/view/home_page.dart';
+import 'package:reminder/view/reminder_list.dart';
+import 'package:reminder/view/search.dart';
+import 'package:reminder/view/user.dart';
+import 'package:reminder/view/user_info.dart';
 import 'package:reminder/view/profile_widget.dart';
-import 'NavBar.dart';
+
+import 'package:reminder/main.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -11,108 +17,85 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  var user = FirebaseAuth.instance.currentUser!;
-
   @override
   Widget build(BuildContext context) {
+    final user = UserInfo.myUser;
 
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.red,
-          title: const Text('My Profile'),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchTable()));
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        title: Text('My Profile'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Search()));
+            },
+            icon: Icon(Icons.search),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ReminderList()));
+            },
+            icon: Icon(Icons.home),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Profile()));
+            },
+            icon: Icon(Icons.person),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(primary: Colors.white),
+              onPressed: () async {
+                Locale newLocale = Locale('en');
+                await FlutterI18n.refresh(context, newLocale);
+                setState(() {});
               },
-              icon: const Icon(Icons.search),
-            ),
-            IconButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ReminderList()));
+              child: Text("EN")),
+          TextButton(
+              style: TextButton.styleFrom(primary: Colors.white),
+              onPressed: () async {
+                Locale newLocale = Locale('fr');
+                await FlutterI18n.refresh(context, newLocale);
+                setState(() {});
               },
-              icon: const Icon(Icons.home),
-            ),
-            IconButton(
-              onPressed: () {
-                // Navigator.push(context,
-                //     MaterialPageRoute(builder: (context) => Profile()));
-              },
-              icon: const Icon(Icons.person),
-            ),
-          ],
-          automaticallyImplyLeading: false,
-        ),
-        body: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                user.photoURL == null
-                    ? Text("")
-                    : ProfileWidget(
-                        imagePath: user.photoURL!,
-                        onClicked: () async {},
-                      ),
-                const SizedBox(height: 24),
-                user.displayName == null
-                    ? Text("Guest")
-                    : TextFormField(
-                        enabled: false,
-                        readOnly: true,
-                        initialValue: user.displayName,
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: 'Full name:',
-                        ),
-                      ),
-                user.email == null
-                    ? Text("")
-                    : TextFormField(
-                        enabled: false,
-                        readOnly: true,
-                        initialValue: user.email,
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: 'Email:',
-                        ),
-                      ),
-                user.phoneNumber == null
-                    ? Text("")
-                    : TextFormField(
-                        enabled: false,
-                        readOnly: true,
-                        initialValue: user.phoneNumber!,
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: 'Phone number:',
-                        ),
-                      ),
-                user.displayName == null
-                    ? Text("")
-                    : TextFormField(
-                        enabled: false,
-                        readOnly: true,
-                        initialValue: "2000-03-10",
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: 'Date of birth:',
-                        ),
-                      ),
-                user.uid == null
-                    ? Text("")
-                    : TextFormField(
-                        enabled: false,
-                        readOnly: true,
-                        initialValue: user.uid,
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: 'Health ID:',
-                        ),
-                      )
-              ],
-            )));
+              child: Text("FR")),
+        ],
+      ),
+      body: ListView(
+        physics: BouncingScrollPhysics(),
+        children: [
+          const SizedBox(height: 24),
+          ProfileWidget(
+            imagePath: user.imagePath,
+            onClicked: () async {},
+          ),
+          const SizedBox(height: 24),
+          buildProfile(user),
+        ],
+      ),
+    );
   }
+
+  Widget buildProfile(User user) => Column(
+        children: [
+          Text(FlutterI18n.translate(context, "fullName"),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          const SizedBox(height: 16),
+          Text(FlutterI18n.translate(context, "dateOfBirth"),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          const SizedBox(height: 16),
+          Text(FlutterI18n.translate(context, "email"),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          const SizedBox(height: 16),
+          Text(FlutterI18n.translate(context, "phone"),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+          const SizedBox(height: 16),
+          Text(FlutterI18n.translate(context, "healthID"),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+        ],
+      );
 }
